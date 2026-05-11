@@ -1,12 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Live Search Engine</title>
+
+<style>
+
+body{
+  background:#0f0f0f;
+  color:white;
+  font-family:Arial,sans-serif;
+  margin:0;
+  padding:40px;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+}
+
+h1{
+  font-size:50px;
+  margin-bottom:30px;
+}
+
+.search-box{
+  display:flex;
+  gap:10px;
+  margin-bottom:30px;
+}
+
+input{
+  flex:1;
+  padding:18px;
+  border:none;
+  border-radius:10px;
+  font-size:18px;
+}
+
+button{
+  padding:18px 25px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+}
+
+button:hover{
+  background:#1d4ed8;
+}
+
+.loading{
+  font-size:20px;
+  margin-bottom:20px;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:25px;
+  border-radius:15px;
+  margin-bottom:20px;
+}
+
+.card h2{
+  margin-top:0;
+}
+
+.card a{
+  color:#60a5fa;
+  text-decoration:none;
+}
+
+.card a:hover{
+  text-decoration:underline;
+}
+
+.no-results{
+  font-size:20px;
+  opacity:0.8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Live Search Engine</h1>
+
+<div class="search-box">
+
+<input
+type="text"
+id="query"
+placeholder="Search latest topics..."
+>
+
+<button onclick="searchNews()">
+Search
+</button>
+
+</div>
+
+<div id="loading" class="loading"></div>
+
+<div id="results"></div>
+
+</div>
+
 <script>
 
 async function searchNews(){
 
   const query =
-    document.getElementById("query").value;
+    document.getElementById("query").value.trim();
 
   if(!query){
-    alert("Enter something");
+    alert("Please enter a search topic");
     return;
   }
 
@@ -17,21 +133,26 @@ async function searchNews(){
 
   try{
 
-    const response = await fetch(
+    const url =
       "https://hn.algolia.com/api/v1/search?query="
-      + encodeURIComponent(query)
-    );
+      + encodeURIComponent(query);
+
+    const response = await fetch(url);
+
+    if(!response.ok){
+      throw new Error("API failed");
+    }
 
     const data = await response.json();
 
-    const hits = data.hits;
+    const hits = data.hits || [];
 
     let html = "";
 
     if(hits.length === 0){
 
       html = `
-        <div class="card">
+        <div class="card no-results">
           No results found.
         </div>
       `;
@@ -40,23 +161,34 @@ async function searchNews(){
 
       hits.slice(0,10).forEach(item=>{
 
+        const title =
+          item.title ||
+          item.story_title ||
+          "No Title";
+
+        const link =
+          item.url ||
+          item.story_url ||
+          "#";
+
+        const author =
+          item.author || "Unknown";
+
         html += `
 
           <div class="card">
 
-            <h2>
-              ${item.title || "No Title"}
-            </h2>
+            <h2>${title}</h2>
 
             <p>
-              Author:
-              ${item.author}
+              <strong>Author:</strong>
+              ${author}
             </p>
 
             <br>
 
             <a
-              href="${item.url}"
+              href="${link}"
               target="_blank"
             >
               Read Article
@@ -73,7 +205,8 @@ async function searchNews(){
     document.getElementById("results").innerHTML =
       html;
 
-    document.getElementById("loading").innerHTML = "";
+    document.getElementById("loading").innerHTML =
+      "";
 
   }catch(error){
 
@@ -87,3 +220,6 @@ async function searchNews(){
 }
 
 </script>
+
+</body>
+</html>
