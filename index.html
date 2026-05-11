@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AI Live Search</title>
+<title>Live News Dashboard</title>
 
 <style>
 
@@ -15,49 +15,89 @@
 
 body{
   margin:0;
+  padding:30px;
   background:#0f0f0f;
   color:white;
   font-family:Arial,sans-serif;
-  padding:30px;
 }
 
 .container{
-  max-width:1000px;
+  max-width:1200px;
   margin:auto;
 }
 
 h1{
   font-size:50px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  opacity:0.7;
   margin-bottom:30px;
 }
 
-.search-box{
+.topbar{
   display:flex;
   gap:10px;
+  flex-wrap:wrap;
   margin-bottom:30px;
-}
-
-input{
-  flex:1;
-  padding:18px;
-  border:none;
-  border-radius:12px;
-  font-size:18px;
-  outline:none;
 }
 
 button{
-  padding:18px 25px;
+  padding:12px 18px;
   border:none;
-  border-radius:12px;
-  background:#2563eb;
+  border-radius:10px;
+  background:#1f2937;
   color:white;
   cursor:pointer;
-  font-size:16px;
+  font-size:15px;
 }
 
 button:hover{
-  background:#1d4ed8;
+  background:#374151;
+}
+
+.news-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#1a1a1a;
+  border-radius:16px;
+  padding:22px;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+}
+
+.card h2{
+  margin-top:0;
+  line-height:1.5;
+  font-size:22px;
+}
+
+.meta{
+  opacity:0.7;
+  margin:15px 0;
+  font-size:14px;
+}
+
+.description{
+  line-height:1.7;
+  margin-bottom:20px;
+}
+
+a{
+  color:#60a5fa;
+  text-decoration:none;
+}
+
+a:hover{
+  text-decoration:underline;
 }
 
 .loading{
@@ -65,45 +105,19 @@ button:hover{
   margin-bottom:20px;
 }
 
-.article{
-  background:#1a1a1a;
-  padding:25px;
-  border-radius:16px;
+.refresh{
   margin-bottom:25px;
+  opacity:0.8;
 }
 
-.article h2{
-  margin-top:0;
-  line-height:1.4;
-}
-
-.meta{
-  opacity:0.7;
-  margin-bottom:20px;
-}
-
-.description{
-  line-height:1.8;
-  font-size:17px;
-}
-
-.source{
-  margin-top:25px;
-}
-
-.source a{
-  color:#60a5fa;
-  text-decoration:none;
-}
-
-.source a:hover{
-  text-decoration:underline;
-}
-
-.no-results{
-  background:#1a1a1a;
-  padding:25px;
-  border-radius:16px;
+.latest-badge{
+  display:inline-block;
+  background:#dc2626;
+  color:white;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  margin-bottom:15px;
 }
 
 </style>
@@ -113,61 +127,78 @@ button:hover{
 
 <div class="container">
 
-<h1>AI Live Search</h1>
+<h1>Live News Dashboard</h1>
 
-<div class="search-box">
+<div class="subtitle">
+Latest articles appear first automatically
+</div>
 
-<input
-type="text"
-id="query"
-placeholder="Search latest topics..."
->
+<div class="topbar">
 
-<button onclick="searchNews()">
-Search
+<button onclick="loadNews('technology')">
+Technology
+</button>
+
+<button onclick="loadNews('artificial intelligence')">
+AI
+</button>
+
+<button onclick="loadNews('cybersecurity')">
+Cybersecurity
+</button>
+
+<button onclick="loadNews('stock market')">
+Stock Market
+</button>
+
+<button onclick="loadNews('bitcoin')">
+Crypto
+</button>
+
+<button onclick="loadNews('science')">
+Science
+</button>
+
+<button onclick="loadNews('india')">
+India
 </button>
 
 </div>
 
+<div class="refresh">
+Auto-refresh every 60 seconds
+</div>
+
 <div id="loading" class="loading"></div>
 
-<div id="results"></div>
+<div id="news" class="news-grid"></div>
 
 </div>
 
 <script>
 
-// ENTER KEY SUPPORT
-document
-.getElementById("query")
-.addEventListener("keypress",function(event){
+let currentTopic = "technology";
 
-  if(event.key === "Enter"){
-    searchNews();
-  }
+// LOAD DEFAULT
+loadNews(currentTopic);
 
-});
+// AUTO REFRESH
+setInterval(() => {
+  loadNews(currentTopic);
+},60000);
 
-async function searchNews(){
+async function loadNews(topic){
 
-  const query =
-    document.getElementById("query").value.trim();
-
-  if(!query){
-    alert("Enter search topic");
-    return;
-  }
+  currentTopic = topic;
 
   document.getElementById("loading").innerHTML =
-    "Fetching latest articles...";
-
-  document.getElementById("results").innerHTML = "";
+    "Loading latest news...";
 
   try{
 
     const rssUrl =
       "https://news.google.com/rss/search?q="
-      + encodeURIComponent(query);
+      + encodeURIComponent(topic);
 
     const api =
       "https://api.rss2json.com/v1/api.json?rss_url="
@@ -179,64 +210,58 @@ async function searchNews(){
 
     const items = data.items || [];
 
+    // SORT LATEST FIRST
+    items.sort((a,b)=>
+      new Date(b.pubDate) - new Date(a.pubDate)
+    );
+
     let html = "";
 
-    if(items.length === 0){
+    items.slice(0,20).forEach((item,index)=>{
 
-      html = `
-        <div class="no-results">
-          No latest articles found.
-        </div>
-      `;
+      const desc =
+        item.description || "No description available.";
 
-    }else{
+      html += `
 
-      items.slice(0,10).forEach(item=>{
+        <div class="card">
 
-        const description =
-          item.description || "No description available.";
+          ${
+            index < 3
+            ? '<div class="latest-badge">LATEST</div>'
+            : ''
+          }
 
-        html += `
+          <h2>
+            ${item.title}
+          </h2>
 
-          <div class="article">
+          <div class="meta">
 
-            <h2>
-              ${item.title}
-            </h2>
-
-            <div class="meta">
-              Published:
-              ${item.pubDate}
-            </div>
-
-            <div class="description">
-              ${description}
-            </div>
-
-            <div class="source">
-
-              <strong>Official Source:</strong>
-
-              <br><br>
-
-              <a
-                href="${item.link}"
-                target="_blank"
-              >
-                ${item.link}
-              </a>
-
-            </div>
+            Published:
+            ${new Date(item.pubDate)
+              .toLocaleString()}
 
           </div>
 
-        `;
+          <div class="description">
+            ${desc}
+          </div>
 
-      });
+          <a
+            href="${item.link}"
+            target="_blank"
+          >
+            Official Source
+          </a>
 
-    }
+        </div>
 
-    document.getElementById("results").innerHTML =
+      `;
+
+    });
+
+    document.getElementById("news").innerHTML =
       html;
 
     document.getElementById("loading").innerHTML =
@@ -247,7 +272,7 @@ async function searchNews(){
     console.error(error);
 
     document.getElementById("loading").innerHTML =
-      "Failed to fetch latest information.";
+      "Failed to fetch latest news.";
 
   }
 
