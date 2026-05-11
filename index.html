@@ -142,10 +142,26 @@ body{
   margin-bottom:16px;
 }
 
+.hero-link{
+  text-decoration:none;
+  color:white;
+  display:block;
+}
+
+.hero-link:hover h1{
+  color:#60a5fa;
+}
+
 .hero h1{
   font-size:34px;
   line-height:1.4;
-  margin-bottom:18px;
+  margin-bottom:14px;
+}
+
+.publisher{
+  color:var(--muted);
+  margin-bottom:16px;
+  font-size:15px;
 }
 
 .hero p{
@@ -158,18 +174,6 @@ body{
   margin-top:18px;
   color:var(--muted);
   font-size:14px;
-}
-
-.source{
-  display:inline-block;
-  margin-top:18px;
-  color:#60a5fa;
-  text-decoration:none;
-  font-size:15px;
-}
-
-.source:hover{
-  text-decoration:underline;
 }
 
 .grid{
@@ -191,16 +195,20 @@ body{
   border-color:#2b2b2b;
 }
 
+.headline-link{
+  text-decoration:none;
+  color:white;
+  display:block;
+}
+
+.headline-link:hover h2{
+  color:#60a5fa;
+}
+
 .card h2{
   font-size:22px;
   line-height:1.5;
-  margin-bottom:14px;
-}
-
-.card p{
-  color:#d1d5db;
-  line-height:1.8;
-  font-size:15px;
+  margin-bottom:10px;
 }
 
 .footer{
@@ -411,9 +419,24 @@ async function loadNews(topic){
           LIVE
         </div>
 
-        <h1>
-          ${cleanTitle(hero.title)}
-        </h1>
+        <a
+          href="${hero.link}"
+          target="_blank"
+          class="hero-link"
+        >
+
+          <h1>
+            ${cleanTitle(hero.title)}
+          </h1>
+
+          <div class="publisher">
+            - ${
+              hero.author ||
+              "Official Source"
+            }
+          </div>
+
+        </a>
 
         <p>
           ${
@@ -425,14 +448,6 @@ async function loadNews(topic){
         <div class="meta">
           ${formatTime(hero.pubDate)}
         </div>
-
-        <a
-          class="source"
-          href="${hero.link}"
-          target="_blank"
-        >
-          Official Source
-        </a>
 
       </section>
 
@@ -464,28 +479,28 @@ async function loadNews(topic){
 
         <article class="card">
 
-          <h2>
-            ${title}
-          </h2>
+          <a
+            href="${item.link}"
+            target="_blank"
+            class="headline-link"
+          >
 
-          <p>
-            ${
-              item.description ||
-              "Latest news update."
-            }
-          </p>
+            <h2>
+              ${title}
+            </h2>
+
+            <div class="publisher">
+              - ${
+                item.author ||
+                "Official Source"
+              }
+            </div>
+
+          </a>
 
           <div class="meta">
             ${formatTime(item.pubDate)}
           </div>
-
-          <a
-            class="source"
-            href="${item.link}"
-            target="_blank"
-          >
-            Official Source
-          </a>
 
         </article>
 
