@@ -5,16 +5,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Live Search Engine</title>
+<title>AI Live Search</title>
 
 <style>
 
+*{
+  box-sizing:border-box;
+}
+
 body{
+  margin:0;
   background:#0f0f0f;
   color:white;
   font-family:Arial,sans-serif;
-  margin:0;
-  padding:40px;
+  padding:30px;
 }
 
 .container{
@@ -37,14 +41,15 @@ input{
   flex:1;
   padding:18px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   font-size:18px;
+  outline:none;
 }
 
 button{
   padding:18px 25px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   background:#2563eb;
   color:white;
   cursor:pointer;
@@ -60,29 +65,45 @@ button:hover{
   margin-bottom:20px;
 }
 
-.card{
+.article{
   background:#1a1a1a;
   padding:25px;
-  border-radius:15px;
+  border-radius:16px;
+  margin-bottom:25px;
+}
+
+.article h2{
+  margin-top:0;
+  line-height:1.4;
+}
+
+.meta{
+  opacity:0.7;
   margin-bottom:20px;
 }
 
-.card h2{
-  margin-top:0;
+.description{
+  line-height:1.8;
+  font-size:17px;
 }
 
-.card a{
+.source{
+  margin-top:25px;
+}
+
+.source a{
   color:#60a5fa;
   text-decoration:none;
 }
 
-.card a:hover{
+.source a:hover{
   text-decoration:underline;
 }
 
 .no-results{
-  font-size:20px;
-  opacity:0.8;
+  background:#1a1a1a;
+  padding:25px;
+  border-radius:16px;
 }
 
 </style>
@@ -92,7 +113,7 @@ button:hover{
 
 <div class="container">
 
-<h1>Live Search Engine</h1>
+<h1>AI Live Search</h1>
 
 <div class="search-box">
 
@@ -116,6 +137,17 @@ Search
 
 <script>
 
+// ENTER KEY SUPPORT
+document
+.getElementById("query")
+.addEventListener("keypress",function(event){
+
+  if(event.key === "Enter"){
+    searchNews();
+  }
+
+});
+
 async function searchNews(){
 
   const query =
@@ -127,18 +159,16 @@ async function searchNews(){
   }
 
   document.getElementById("loading").innerHTML =
-    "Fetching latest news...";
+    "Fetching latest articles...";
 
   document.getElementById("results").innerHTML = "";
 
   try{
 
-    // GOOGLE NEWS RSS
     const rssUrl =
       "https://news.google.com/rss/search?q="
       + encodeURIComponent(query);
 
-    // RSS TO JSON CONVERTER
     const api =
       "https://api.rss2json.com/v1/api.json?rss_url="
       + encodeURIComponent(rssUrl);
@@ -154,8 +184,8 @@ async function searchNews(){
     if(items.length === 0){
 
       html = `
-        <div class="card">
-          No latest news found.
+        <div class="no-results">
+          No latest articles found.
         </div>
       `;
 
@@ -163,25 +193,40 @@ async function searchNews(){
 
       items.slice(0,10).forEach(item=>{
 
+        const description =
+          item.description || "No description available.";
+
         html += `
 
-          <div class="card">
+          <div class="article">
 
-            <h2>${item.title}</h2>
+            <h2>
+              ${item.title}
+            </h2>
 
-            <p>
-              <strong>Published:</strong>
+            <div class="meta">
+              Published:
               ${item.pubDate}
-            </p>
+            </div>
 
-            <br>
+            <div class="description">
+              ${description}
+            </div>
 
-            <a
-              href="${item.link}"
-              target="_blank"
-            >
-              Read Full Article
-            </a>
+            <div class="source">
+
+              <strong>Official Source:</strong>
+
+              <br><br>
+
+              <a
+                href="${item.link}"
+                target="_blank"
+              >
+                ${item.link}
+              </a>
+
+            </div>
 
           </div>
 
