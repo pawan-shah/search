@@ -1,123 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Live News Search</title>
 
-<title>Live News Search</title>
+  <style>
 
-<style>
+    body{
+      background:#111;
+      color:white;
+      font-family:Arial;
+      padding:30px;
+    }
 
-body{
-  background:#0f0f0f;
-  color:white;
-  font-family:Arial;
-  padding:40px;
-}
+    input{
+      width:70%;
+      padding:15px;
+      border:none;
+      border-radius:10px;
+      font-size:18px;
+    }
 
-.container{
-  max-width:1000px;
-  margin:auto;
-}
+    button{
+      padding:15px 20px;
+      border:none;
+      border-radius:10px;
+      background:#2563eb;
+      color:white;
+      cursor:pointer;
+    }
 
-h1{
-  font-size:50px;
-  margin-bottom:30px;
-}
+    .card{
+      background:#1e1e1e;
+      padding:20px;
+      border-radius:15px;
+      margin-top:20px;
+    }
 
-.search{
-  display:flex;
-  gap:10px;
-  margin-bottom:30px;
-}
+    a{
+      color:#60a5fa;
+    }
 
-input{
-  flex:1;
-  padding:18px;
-  border:none;
-  border-radius:10px;
-  font-size:18px;
-}
+  </style>
 
-button{
-  padding:18px 25px;
-  border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:white;
-  cursor:pointer;
-}
-
-.card{
-  background:#1a1a1a;
-  padding:25px;
-  border-radius:15px;
-  margin-bottom:20px;
-}
-
-.card h2{
-  margin-bottom:15px;
-}
-
-.article{
-  margin-bottom:20px;
-  padding-bottom:20px;
-  border-bottom:1px solid #333;
-}
-
-.article a{
-  color:#60a5fa;
-  text-decoration:none;
-}
-
-.article a:hover{
-  text-decoration:underline;
-}
-
-.related{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:15px;
-}
-
-.related button{
-  background:#27272a;
-}
-
-.loading{
-  font-size:20px;
-  margin:20px 0;
-}
-
-</style>
 </head>
 
 <body>
 
-<div class="container">
-
 <h1>Live Search Engine</h1>
 
-<div class="search">
-
 <input
-type="text"
-id="query"
-placeholder="Search latest topics..."
+  id="query"
+  placeholder="Search latest news..."
 >
 
 <button onclick="searchNews()">
 Search
 </button>
 
-</div>
-
 <div id="loading"></div>
 
 <div id="results"></div>
-
-</div>
 
 <script>
 
@@ -129,28 +72,26 @@ async function searchNews(){
   if(!query) return;
 
   document.getElementById("loading").innerHTML =
-    "Fetching latest information...";
+    "Loading latest news...";
 
   document.getElementById("results").innerHTML = "";
 
   try{
 
-    // WORKING RSS URL
-    const rssUrl =
-      "https://api.rss2json.com/v1/api.json?rss_url=" +
-      encodeURIComponent(
-        "https://news.google.com/rss/search?q=" + query
-      );
+    // WORKING NEWS SEARCH
+    const url =
+      "https://hn.algolia.com/api/v1/search?query="
+      + encodeURIComponent(query);
 
-    const response = await fetch(rssUrl);
+    const response = await fetch(url);
 
     const data = await response.json();
 
-    const items = data.items || [];
+    const hits = data.hits;
 
     let html = "";
 
-    if(items.length === 0){
+    if(hits.length === 0){
 
       html = `
         <div class="card">
@@ -160,77 +101,37 @@ async function searchNews(){
 
     }else{
 
-      items.forEach((item,index)=>{
-
-        if(index > 9) return;
-
-        const title = item.title;
-        const link = item.link;
-        const pubDate = item.pubDate;
-        const source = item.author || "Google News";
+      hits.slice(0,10).forEach(item=>{
 
         html += `
 
-        <div class="card article">
+          <div class="card">
 
-          <h2>${title}</h2>
+            <h2>
+              ${item.title || "No Title"}
+            </h2>
 
-          <p>
-            <strong>Source:</strong>
-            ${source}
-          </p>
+            <p>
+              Author:
+              ${item.author}
+            </p>
 
-          <p>
-            <strong>Published:</strong>
-            ${pubDate}
-          </p>
+            <br>
 
-          <br>
+            <a
+              href="${item.url}"
+              target="_blank"
+            >
+              Read Article
+            </a>
 
-          <a href="${link}" target="_blank">
-            Read Full Article
-          </a>
-
-        </div>
+          </div>
 
         `;
 
       });
 
     }
-
-    // RELATED SEARCHES
-
-    const relatedTopics = [
-      `${query} latest`,
-      `${query} trends`,
-      `${query} analysis`,
-      `${query} future`,
-      `${query} updates`
-    ];
-
-    const relatedHTML =
-      relatedTopics.map(topic=>`
-
-        <button onclick="searchRelated('${topic}')">
-          ${topic}
-        </button>
-
-      `).join("");
-
-    html += `
-
-      <div class="card">
-
-        <h2>Related Searches</h2>
-
-        <div class="related">
-          ${relatedHTML}
-        </div>
-
-      </div>
-
-    `;
 
     document.getElementById("results").innerHTML =
       html;
@@ -242,17 +143,9 @@ async function searchNews(){
     console.error(error);
 
     document.getElementById("loading").innerHTML =
-      "Failed to fetch latest information.";
+      "Error fetching latest information.";
 
   }
-
-}
-
-function searchRelated(topic){
-
-  document.getElementById("query").value = topic;
-
-  searchNews();
 
 }
 
