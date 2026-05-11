@@ -122,76 +122,65 @@ async function searchNews(){
     document.getElementById("query").value.trim();
 
   if(!query){
-    alert("Please enter a search topic");
+    alert("Enter search topic");
     return;
   }
 
   document.getElementById("loading").innerHTML =
-    "Loading latest information...";
+    "Fetching latest news...";
 
   document.getElementById("results").innerHTML = "";
 
   try{
 
-    const url =
-      "https://hn.algolia.com/api/v1/search?query="
+    // GOOGLE NEWS RSS
+    const rssUrl =
+      "https://news.google.com/rss/search?q="
       + encodeURIComponent(query);
 
-    const response = await fetch(url);
+    // RSS TO JSON CONVERTER
+    const api =
+      "https://api.rss2json.com/v1/api.json?rss_url="
+      + encodeURIComponent(rssUrl);
 
-    if(!response.ok){
-      throw new Error("API failed");
-    }
+    const response = await fetch(api);
 
     const data = await response.json();
 
-    const hits = data.hits || [];
+    const items = data.items || [];
 
     let html = "";
 
-    if(hits.length === 0){
+    if(items.length === 0){
 
       html = `
-        <div class="card no-results">
-          No results found.
+        <div class="card">
+          No latest news found.
         </div>
       `;
 
     }else{
 
-      hits.slice(0,10).forEach(item=>{
-
-        const title =
-          item.title ||
-          item.story_title ||
-          "No Title";
-
-        const link =
-          item.url ||
-          item.story_url ||
-          "#";
-
-        const author =
-          item.author || "Unknown";
+      items.slice(0,10).forEach(item=>{
 
         html += `
 
           <div class="card">
 
-            <h2>${title}</h2>
+            <h2>${item.title}</h2>
 
             <p>
-              <strong>Author:</strong>
-              ${author}
+              <strong>Published:</strong>
+              ${item.pubDate}
             </p>
 
             <br>
 
             <a
-              href="${link}"
+              href="${item.link}"
               target="_blank"
             >
-              Read Article
+              Read Full Article
             </a>
 
           </div>
