@@ -61,6 +61,10 @@ body{
   font-size:16px;
 }
 
+.search-box button:hover{
+  background:#1d4ed8;
+}
+
 .categories{
   display:flex;
   gap:10px;
@@ -173,6 +177,7 @@ body{
   margin-top:20px;
   color:#60a5fa;
   text-decoration:none;
+  word-break:break-word;
 }
 
 .source-link:hover{
@@ -198,6 +203,18 @@ body{
   padding:40px;
   text-align:center;
   opacity:0.6;
+}
+
+@media(max-width:768px){
+
+  .hero-title{
+    font-size:28px;
+  }
+
+  .hero img{
+    height:250px;
+  }
+
 }
 
 </style>
@@ -253,7 +270,7 @@ Search
 </div>
 
 <div class="footer">
-Live dashboard updates automatically every 60 seconds
+Latest news updates automatically every 60 seconds
 </div>
 
 <script>
@@ -284,6 +301,56 @@ setInterval(()=>{
   loadNews(currentTopic);
 
 },60000);
+
+// TIME AGO FORMAT
+function formatTime(dateString){
+
+  const now = new Date();
+
+  const date = new Date(dateString);
+
+  const seconds =
+    Math.floor((now - date)/1000);
+
+  const minutes =
+    Math.floor(seconds/60);
+
+  const hours =
+    Math.floor(minutes/60);
+
+  const days =
+    Math.floor(hours/24);
+
+  if(minutes < 1){
+    return "Just now";
+  }
+
+  if(minutes < 60){
+    return minutes + " minutes ago";
+  }
+
+  if(hours < 24){
+    return hours + " hours ago";
+  }
+
+  return days + " days ago";
+
+}
+
+// EXTRACT OFFICIAL IMAGE
+function extractImage(html){
+
+  const div =
+    document.createElement("div");
+
+  div.innerHTML = html;
+
+  const img =
+    div.querySelector("img");
+
+  return img ? img.src : null;
+
+}
 
 async function loadNews(topic){
 
@@ -333,6 +400,7 @@ async function loadNews(topic){
 
         <img
           src="${
+            extractImage(hero.description) ||
             hero.thumbnail ||
             'https://picsum.photos/1200/500'
           }"
@@ -357,9 +425,7 @@ async function loadNews(topic){
 
           <div class="hero-meta">
 
-            Published:
-            ${new Date(hero.pubDate)
-              .toLocaleString()}
+            ${formatTime(hero.pubDate)}
 
           </div>
 
@@ -385,12 +451,18 @@ async function loadNews(topic){
 
     items.slice(1,20).forEach(item=>{
 
+      // REMOVE DUPLICATE HERO ARTICLE
+      if(item.link === hero.link){
+        return;
+      }
+
       html += `
 
         <div class="card">
 
           <img
             src="${
+              extractImage(item.description) ||
               item.thumbnail ||
               'https://picsum.photos/600/400'
             }"
@@ -411,9 +483,7 @@ async function loadNews(topic){
 
             <div class="meta">
 
-              Published:
-              ${new Date(item.pubDate)
-                .toLocaleString()}
+              ${formatTime(item.pubDate)}
 
             </div>
 
