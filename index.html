@@ -135,73 +135,71 @@ async function searchNews(){
 
   try{
 
-    // FREE RSS SOURCE
+    // WORKING RSS URL
     const rssUrl =
-      `https://api.allorigins.win/raw?url=${
-        encodeURIComponent(
-          `https://news.google.com/rss/search?q=${query}`
-        )
-      }`;
+      "https://api.rss2json.com/v1/api.json?rss_url=" +
+      encodeURIComponent(
+        "https://news.google.com/rss/search?q=" + query
+      );
 
     const response = await fetch(rssUrl);
 
-    const text = await response.text();
+    const data = await response.json();
 
-    const parser = new DOMParser();
-
-    const xml =
-      parser.parseFromString(text,"text/xml");
-
-    const items =
-      xml.querySelectorAll("item");
+    const items = data.items || [];
 
     let html = "";
 
-    items.forEach((item,index)=>{
+    if(items.length === 0){
 
-      if(index > 9) return;
-
-      const title =
-        item.querySelector("title")?.textContent;
-
-      const link =
-        item.querySelector("link")?.textContent;
-
-      const pubDate =
-        item.querySelector("pubDate")?.textContent;
-
-      const source =
-        item.querySelector("source")?.textContent || "Unknown";
-
-      html += `
-
-      <div class="card article">
-
-        <h2>${title}</h2>
-
-        <p>
-          <strong>Source:</strong>
-          ${source}
-        </p>
-
-        <p>
-          <strong>Published:</strong>
-          ${pubDate}
-        </p>
-
-        <br>
-
-        <a href="${link}" target="_blank">
-          Read Full Article
-        </a>
-
-      </div>
-
+      html = `
+        <div class="card">
+          No results found.
+        </div>
       `;
 
-    });
+    }else{
 
-    // RELATED TOPICS
+      items.forEach((item,index)=>{
+
+        if(index > 9) return;
+
+        const title = item.title;
+        const link = item.link;
+        const pubDate = item.pubDate;
+        const source = item.author || "Google News";
+
+        html += `
+
+        <div class="card article">
+
+          <h2>${title}</h2>
+
+          <p>
+            <strong>Source:</strong>
+            ${source}
+          </p>
+
+          <p>
+            <strong>Published:</strong>
+            ${pubDate}
+          </p>
+
+          <br>
+
+          <a href="${link}" target="_blank">
+            Read Full Article
+          </a>
+
+        </div>
+
+        `;
+
+      });
+
+    }
+
+    // RELATED SEARCHES
 
     const relatedTopics = [
       `${query} latest`,
@@ -222,15 +220,15 @@ async function searchNews(){
 
     html += `
 
-    <div class="card">
+      <div class="card">
 
-      <h2>Related Searches</h2>
+        <h2>Related Searches</h2>
 
-      <div class="related">
-        ${relatedHTML}
+        <div class="related">
+          ${relatedHTML}
+        </div>
+
       </div>
-
-    </div>
 
     `;
 
