@@ -302,7 +302,7 @@ setInterval(()=>{
 
 },60000);
 
-// TIME AGO FORMAT
+// TIME FORMAT
 function formatTime(dateString){
 
   const now = new Date();
@@ -337,7 +337,7 @@ function formatTime(dateString){
 
 }
 
-// EXTRACT OFFICIAL IMAGE
+// EXTRACT IMAGE FROM DESCRIPTION
 function extractImage(html){
 
   const div =
@@ -349,6 +349,31 @@ function extractImage(html){
     div.querySelector("img");
 
   return img ? img.src : null;
+
+}
+
+// BETTER IMAGE SELECTION
+function getBestImage(item){
+
+  const descImage =
+    extractImage(item.description);
+
+  if(
+    descImage &&
+    !descImage.includes("gstatic") &&
+    !descImage.includes("google")
+  ){
+    return descImage;
+  }
+
+  if(
+    item.thumbnail &&
+    !item.thumbnail.includes("gstatic")
+  ){
+    return item.thumbnail;
+  }
+
+  return "https://picsum.photos/600/400";
 
 }
 
@@ -399,11 +424,7 @@ async function loadNews(topic){
       <div class="hero">
 
         <img
-          src="${
-            extractImage(hero.description) ||
-            hero.thumbnail ||
-            'https://picsum.photos/1200/500'
-          }"
+          src="${getBestImage(hero)}"
         >
 
         <div class="hero-content">
@@ -446,26 +467,34 @@ async function loadNews(topic){
     document.getElementById("hero").innerHTML =
       heroHTML;
 
-    // OTHER ARTICLES
+    // REMOVE DUPLICATES
+    const seenTitles = new Set();
+
     let html = "";
 
-    items.slice(1,20).forEach(item=>{
+    items.slice(1,30).forEach(item=>{
 
-      // REMOVE DUPLICATE HERO ARTICLE
-      if(item.link === hero.link){
+      const cleanTitle =
+        item.title
+          .toLowerCase()
+          .trim();
+
+      // SKIP DUPLICATES
+      if(
+        seenTitles.has(cleanTitle) ||
+        item.link === hero.link
+      ){
         return;
       }
+
+      seenTitles.add(cleanTitle);
 
       html += `
 
         <div class="card">
 
           <img
-            src="${
-              extractImage(item.description) ||
-              item.thumbnail ||
-              'https://picsum.photos/600/400'
-            }"
+            src="${getBestImage(item)}"
           >
 
           <div class="card-content">
