@@ -5,119 +5,199 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Live News Dashboard</title>
+<title>Global Live News Dashboard</title>
 
 <style>
 
 *{
+  margin:0;
+  padding:0;
   box-sizing:border-box;
 }
 
 body{
-  margin:0;
-  padding:30px;
-  background:#0f0f0f;
+  background:#0b0b0b;
   color:white;
   font-family:Arial,sans-serif;
 }
 
-.container{
-  max-width:1200px;
-  margin:auto;
+.header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111;
+  padding:20px;
+  border-bottom:1px solid #222;
 }
 
-h1{
-  font-size:50px;
-  margin-bottom:10px;
+.logo{
+  font-size:38px;
+  font-weight:bold;
+  margin-bottom:20px;
 }
 
-.subtitle{
-  opacity:0.7;
-  margin-bottom:30px;
-}
-
-.topbar{
+.search-box{
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:30px;
+  margin-bottom:20px;
 }
 
-button{
-  padding:12px 18px;
+.search-box input{
+  flex:1;
+  padding:18px;
   border:none;
-  border-radius:10px;
-  background:#1f2937;
+  border-radius:12px;
+  font-size:18px;
+  outline:none;
+}
+
+.search-box button{
+  padding:18px 24px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
   color:white;
   cursor:pointer;
-  font-size:15px;
+  font-size:16px;
 }
 
-button:hover{
+.categories{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding-bottom:10px;
+}
+
+.categories button{
+  background:#1f2937;
+  border:none;
+  color:white;
+  padding:12px 18px;
+  border-radius:30px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.categories button:hover{
   background:#374151;
 }
 
-.news-grid{
+.container{
+  max-width:1400px;
+  margin:auto;
+  padding:25px;
+}
+
+.hero{
+  background:#121212;
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:30px;
+  border:1px solid #222;
+}
+
+.hero img{
+  width:100%;
+  height:450px;
+  object-fit:cover;
+}
+
+.hero-content{
+  padding:30px;
+}
+
+.hero-title{
+  font-size:38px;
+  line-height:1.4;
+  margin-bottom:20px;
+}
+
+.hero-desc{
+  line-height:1.9;
+  opacity:0.9;
+  font-size:18px;
+}
+
+.hero-meta{
+  margin-top:20px;
+  opacity:0.7;
+}
+
+.grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+  gap:25px;
 }
 
 .card{
-  background:#1a1a1a;
-  border-radius:16px;
-  padding:22px;
+  background:#121212;
+  border-radius:20px;
+  overflow:hidden;
+  border:1px solid #222;
   transition:0.2s;
 }
 
 .card:hover{
-  transform:translateY(-3px);
+  transform:translateY(-4px);
+}
+
+.card img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+}
+
+.card-content{
+  padding:22px;
 }
 
 .card h2{
-  margin-top:0;
+  font-size:24px;
   line-height:1.5;
-  font-size:22px;
+  margin-bottom:15px;
+}
+
+.card-desc{
+  line-height:1.8;
+  opacity:0.9;
 }
 
 .meta{
-  opacity:0.7;
-  margin:15px 0;
+  margin-top:20px;
   font-size:14px;
+  opacity:0.7;
 }
 
-.description{
-  line-height:1.7;
-  margin-bottom:20px;
-}
-
-a{
+.source-link{
+  display:inline-block;
+  margin-top:20px;
   color:#60a5fa;
   text-decoration:none;
 }
 
-a:hover{
+.source-link:hover{
   text-decoration:underline;
 }
 
 .loading{
-  font-size:20px;
-  margin-bottom:20px;
+  font-size:22px;
+  margin:30px 0;
 }
 
-.refresh{
-  margin-bottom:25px;
-  opacity:0.8;
-}
-
-.latest-badge{
+.badge{
   display:inline-block;
   background:#dc2626;
   color:white;
   padding:6px 10px;
-  border-radius:8px;
+  border-radius:10px;
   font-size:12px;
   margin-bottom:15px;
+}
+
+.footer{
+  padding:40px;
+  text-align:center;
+  opacity:0.6;
 }
 
 </style>
@@ -125,74 +205,94 @@ a:hover{
 
 <body>
 
+<div class="header">
+
+<div class="logo">
+Global Live News
+</div>
+
+<div class="search-box">
+
+<input
+type="text"
+id="query"
+placeholder="Search anything..."
+>
+
+<button onclick="loadNews(document.getElementById('query').value)">
+Search
+</button>
+
+</div>
+
+<div class="categories">
+
+<button onclick="loadNews('world news')">World</button>
+<button onclick="loadNews('technology')">Technology</button>
+<button onclick="loadNews('artificial intelligence')">AI</button>
+<button onclick="loadNews('cybersecurity')">Cybersecurity</button>
+<button onclick="loadNews('stock market')">Stock Market</button>
+<button onclick="loadNews('bitcoin')">Crypto</button>
+<button onclick="loadNews('science')">Science</button>
+<button onclick="loadNews('india')">India</button>
+<button onclick="loadNews('space')">Space</button>
+<button onclick="loadNews('startups')">Startups</button>
+
+</div>
+
+</div>
+
 <div class="container">
-
-<h1>Live News Dashboard</h1>
-
-<div class="subtitle">
-Latest articles appear first automatically
-</div>
-
-<div class="topbar">
-
-<button onclick="loadNews('technology')">
-Technology
-</button>
-
-<button onclick="loadNews('artificial intelligence')">
-AI
-</button>
-
-<button onclick="loadNews('cybersecurity')">
-Cybersecurity
-</button>
-
-<button onclick="loadNews('stock market')">
-Stock Market
-</button>
-
-<button onclick="loadNews('bitcoin')">
-Crypto
-</button>
-
-<button onclick="loadNews('science')">
-Science
-</button>
-
-<button onclick="loadNews('india')">
-India
-</button>
-
-</div>
-
-<div class="refresh">
-Auto-refresh every 60 seconds
-</div>
 
 <div id="loading" class="loading"></div>
 
-<div id="news" class="news-grid"></div>
+<div id="hero"></div>
 
+<div id="news" class="grid"></div>
+
+</div>
+
+<div class="footer">
+Live dashboard updates automatically every 60 seconds
 </div>
 
 <script>
 
-let currentTopic = "technology";
+let currentTopic = "world news";
 
-// LOAD DEFAULT
+// ENTER KEY SEARCH
+document
+.getElementById("query")
+.addEventListener("keypress",function(event){
+
+  if(event.key === "Enter"){
+
+    loadNews(
+      document.getElementById("query").value
+    );
+
+  }
+
+});
+
+// INITIAL LOAD
 loadNews(currentTopic);
 
 // AUTO REFRESH
-setInterval(() => {
+setInterval(()=>{
+
   loadNews(currentTopic);
+
 },60000);
 
 async function loadNews(topic){
 
+  if(!topic) return;
+
   currentTopic = topic;
 
   document.getElementById("loading").innerHTML =
-    "Loading latest news...";
+    "Loading latest global news...";
 
   try{
 
@@ -215,45 +315,117 @@ async function loadNews(topic){
       new Date(b.pubDate) - new Date(a.pubDate)
     );
 
+    if(items.length === 0){
+
+      document.getElementById("loading").innerHTML =
+        "No latest news found.";
+
+      return;
+
+    }
+
+    // HERO ARTICLE
+    const hero = items[0];
+
+    const heroHTML = `
+
+      <div class="hero">
+
+        <img
+          src="${
+            hero.thumbnail ||
+            'https://picsum.photos/1200/500'
+          }"
+        >
+
+        <div class="hero-content">
+
+          <div class="badge">
+            BREAKING
+          </div>
+
+          <div class="hero-title">
+            ${hero.title}
+          </div>
+
+          <div class="hero-desc">
+            ${
+              hero.description ||
+              "Latest global update."
+            }
+          </div>
+
+          <div class="hero-meta">
+
+            Published:
+            ${new Date(hero.pubDate)
+              .toLocaleString()}
+
+          </div>
+
+          <a
+            class="source-link"
+            href="${hero.link}"
+            target="_blank"
+          >
+            Official Source
+          </a>
+
+        </div>
+
+      </div>
+
+    `;
+
+    document.getElementById("hero").innerHTML =
+      heroHTML;
+
+    // OTHER ARTICLES
     let html = "";
 
-    items.slice(0,20).forEach((item,index)=>{
-
-      const desc =
-        item.description || "No description available.";
+    items.slice(1,20).forEach(item=>{
 
       html += `
 
         <div class="card">
 
-          ${
-            index < 3
-            ? '<div class="latest-badge">LATEST</div>'
-            : ''
-          }
-
-          <h2>
-            ${item.title}
-          </h2>
-
-          <div class="meta">
-
-            Published:
-            ${new Date(item.pubDate)
-              .toLocaleString()}
-
-          </div>
-
-          <div class="description">
-            ${desc}
-          </div>
-
-          <a
-            href="${item.link}"
-            target="_blank"
+          <img
+            src="${
+              item.thumbnail ||
+              'https://picsum.photos/600/400'
+            }"
           >
-            Official Source
-          </a>
+
+          <div class="card-content">
+
+            <h2>
+              ${item.title}
+            </h2>
+
+            <div class="card-desc">
+              ${
+                item.description ||
+                "Latest news update."
+              }
+            </div>
+
+            <div class="meta">
+
+              Published:
+              ${new Date(item.pubDate)
+                .toLocaleString()}
+
+            </div>
+
+            <a
+              class="source-link"
+              href="${item.link}"
+              target="_blank"
+            >
+              Official Source
+            </a>
+
+          </div>
 
         </div>
 
