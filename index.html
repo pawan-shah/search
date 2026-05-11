@@ -281,6 +281,21 @@ setInterval(()=>{
 
 },60000);
 
+// REMOVE SOURCE NAME FROM TITLE
+function cleanTitle(title){
+
+  if(title.includes(" - ")){
+
+    return title
+      .split(" - ")[0]
+      .trim();
+
+  }
+
+  return title;
+
+}
+
 // TIME FORMAT
 function formatTime(dateString){
 
@@ -367,7 +382,7 @@ async function loadNews(topic){
         </div>
 
         <div class="hero-title">
-          ${hero.title}
+          ${cleanTitle(hero.title)}
         </div>
 
         <div class="hero-desc">
@@ -405,19 +420,20 @@ async function loadNews(topic){
 
     items.slice(1,30).forEach(item=>{
 
-      const cleanTitle =
-        item.title
-          .toLowerCase()
-          .trim();
+      const title =
+        cleanTitle(item.title);
+
+      const clean =
+        title.toLowerCase().trim();
 
       if(
-        seenTitles.has(cleanTitle) ||
+        seenTitles.has(clean) ||
         item.link === hero.link
       ){
         return;
       }
 
-      seenTitles.add(cleanTitle);
+      seenTitles.add(clean);
 
       html += `
 
@@ -426,7 +442,7 @@ async function loadNews(topic){
           <div class="card-content">
 
             <h2>
-              ${item.title}
+              ${title}
             </h2>
 
             <div class="card-desc">
